@@ -3,119 +3,124 @@ let detailModal = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('detailModal');
-    if (modalElement) {
+    if (modalElement && typeof bootstrap !== 'undefined') {
         detailModal = new bootstrap.Modal(modalElement);
     }
 
     const btnFilter = document.getElementById('btnFilter');
-    if (btnFilter) {
-        btnFilter.addEventListener('click', loadRequests);
-    }
+    if (btnFilter) btnFilter.addEventListener('click', applyFilters);
 
     const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', logout);
+    if (btnLogout) btnLogout.addEventListener('click', logout);
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        });
     }
 
     loadRequests();
 });
 
+function switchSection(section) {
+    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+    
+    const targetSection = document.getElementById(`view-${section}`);
+    if (targetSection) targetSection.classList.add('active');
+
+    document.querySelectorAll('.sidebar-nav a').forEach(el => el.classList.remove('active'));
+    const activeNav = document.getElementById(`nav-${section}`);
+    if (activeNav) activeNav.classList.add('active');
+
+    const titles = {
+        'dashboard': 'Panel de Administración',
+        'solicitudes': 'Lista de Solicitudes',
+        'lote': 'Reporte Detallado de Lote',
+        'reportes': 'Reportes y Estadísticas'
+    };
+    
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) {
+        pageTitle.innerHTML = `<i class="fas fa-shield-halved me-2" style="color:var(--teal)"></i>${titles[section] || titles['dashboard']}`;
+    }
+}
+
 async function loadRequests() {
     try {
-        const res = await fetch('api/index.php?action=get_admin_requests');
+        const res = await fetch('/api/get_admin_requests');
         if (res.status === 401 || res.status === 403) {
-            window.location.href = 'index.html';
+            window.location.href = '/login';
             return;
         }
         allRequests = await res.json();
+        updateMetrics(allRequests);
         renderTable(allRequests);
     } catch (error) {
         console.error('Error cargando solicitudes:', error);
+        renderTable([]);
     }
+}
+
+function updateMetrics(data) {
+    const total = data.length;
+    const pendientes = data.filter(r => r.global_status === 'Pendiente').length;
+    const proceso = data.filter(r => r.global_status === 'En Proceso').length;
+    const finalizados = data.filter(r => r.global_status === 'Finalizado').length;
+
+    if (document.getElementById('dashTotal')) document.getElementById('dashTotal').innerText = total;
+    if (document.getElementById('dashPendientes')) document.getElementById('dashPendientes').innerText = pendientes;
+    if (document.getElementById('dashProceso')) document.getElementById('dashProceso').innerText = proceso;
+    if (document.getElementById('dashFinalizados')) document.getElementById('dashFinalizados').innerText = finalizados;
 }
 
 function renderTable(data) {
     const tbody = document.getElementById('adminTableBody');
     if (!tbody) return;
 
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-inbox fs-4 d-block mb-2"></i>No hay solicitudes registradas.</td></tr>`;
+        return;
+    }
+
     tbody.innerHTML = data.map(r => `
         <tr>
-            <td>${r.dni}</td>
+            <td class="fw-bold">${r.dni}</td>
             <td>${r.names} ${r.surnames}</td>
-            <td><span class="badge ${r.global_status === 'Finalizado' ? 'bg-success' : 'bg-warning'}">${r.global_status}</span></td>
+            <td>
+                <span class="badge ${r.global_status === 'Finalizado' ? 'bg-success' : (r.global_status === 'En Proceso' ? 'bg-info' : 'bg-warning')}">
+                    ${r.global_status}
+                </span>
+            </td>
             <td>${r.created_at}</td>
-            <td><button class="btn btn-sm btn-info text-white btn-manage" data-id="${r.id}">Gestionar Servicios</button></td>
+            <td class="text-center">
+                <button class="btn-gestionar btn-manage" data-id="${r.id}">
+                    <i class="fas fa-cog me-1"></i>Gestionar Servicios
+                </button>
+            </td>
         </tr>
     `).join('');
-
-    tbody.querySelectorAll('.btn-manage').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = parseInt(e.target.getAttribute('data-id'), 10);
-            openDetail(id);
-        });
-    });
 }
 
-function openDetail(id) {
-    const req = allRequests.find(r => parseInt(r.id, 10) === id);
-    if (!req) return;
+function applyFilters() {
+    const textVal = (document.getElementById('f_text')?.value || '').toLowerCase();
+    const statusVal = document.getElementById('f_status')?.value || '';
 
-    let html = `<p><strong>Observaciones Cliente:</strong> ${req.observations || ''}</p><hr>`;
-    req.services.forEach(s => {
-        html += `
-        <div class="card mb-2">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-0">${s.service_name} <span class="badge ${s.status === 'Listo' ? 'bg-success' : 'bg-secondary'}">${s.status}</span></h6>
-                </div>
-                <div>
-                    ${s.status === 'Pendiente' ? `
-                        <form data-service-id="${s.id}" class="d-flex form-upload">
-                            <input type="file" class="form-control form-control-sm me-2" accept="application/pdf" required>
-                            <button type="submit" class="btn btn-sm btn-primary">Subir y Completar</button>
-                        </form>
-                    ` : `<a href="api/index.php?action=download_pdf&file=${s.pdf_path}" target="_blank" class="btn btn-sm btn-success">Ver PDF Subido</a>`}
-                </div>
-            </div>
-        </div>`;
+    const filtered = allRequests.filter(r => {
+        const matchesText = r.dni.toLowerCase().includes(textVal) || 
+                            `${r.names} ${r.surnames}`.toLowerCase().includes(textVal);
+        const matchesStatus = statusVal === '' || r.global_status === statusVal;
+        return matchesText && matchesStatus;
     });
 
-    const modalContent = document.getElementById('modalContent');
-    modalContent.innerHTML = html;
-
-    modalContent.querySelectorAll('.form-upload').forEach(form => {
-        form.addEventListener('submit', (e) => {
-            const serviceId = form.getAttribute('data-service-id');
-            uploadFile(e, serviceId);
-        });
-    });
-
-    detailModal.show();
-}
-
-async function uploadFile(e, serviceId) {
-    e.preventDefault();
-    const fileInput = e.target.querySelector('input[type="file"]');
-    const formData = new FormData();
-    formData.append('pdf', fileInput.files[0]);
-    formData.append('service_id', serviceId);
-
-    try {
-        const res = await fetch('api/index.php?action=upload_pdf', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.status === 'success') {
-            alert('Archivo subido. Estado actualizado.');
-            detailModal.hide();
-            loadRequests();
-        } else {
-            alert(data.message);
-        }
-    } catch (error) {
-        console.error('Error subiendo archivo:', error);
-    }
+    renderTable(filtered);
 }
 
 async function logout() {
-    await fetch('api/index.php?action=logout');
-    window.location.href = 'index.html';
+    window.location.href = '/login';
 }

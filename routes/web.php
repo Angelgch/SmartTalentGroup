@@ -2,16 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Ruta raíz (Carga el Login)
+// Ruta principal (Login)
 Route::get('/', function () {
     return view('auth.login');
-});
+})->name('login');
 
-// Rutas secundarias para los paneles
-Route::get('/admin/dashboard', function () {
+// Ruta Panel Administrador
+Route::get('/admin', function () {
     return view('admin.dashboardAdmin');
-});
+})->name('admin');
 
-Route::get('/company/dashboard', function () {
+// Ruta Portal Cliente / Company
+Route::get('/company', function () {
     return view('company.dashboardCompany');
-});
+})->name('company');

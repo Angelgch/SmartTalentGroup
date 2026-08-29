@@ -3,118 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmarTalent Group - Sistema de Validación de Talento</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Smart Talent Group — Acceso</title>
+    
+    <!-- Fuentes y Fuentes de Íconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- @vite(['resources/css/login.css']) -->
     @vite(['resources/css/login.css', 'resources/js/login.js'])
 </head>
 <body>
 
-    <!-- Selector Flotante (Configuración Idioma / Tema) -->
-    <div class="top-controls d-flex align-items-center gap-2">
-        <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fa-solid fa-globe me-1"></i> ES
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item active" href="#">Español (ES)</a></li>
-                <li><a class="dropdown-item" href="#">English (EN)</a></li>
-            </ul>
-        </div>
-        <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fa-solid fa-sun me-1"></i> Claro
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item active" href="#"><i class="fa-solid fa-sun me-2"></i>Claro</a></li>
-                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-moon me-2"></i>Oscuro</a></li>
-            </ul>
-        </div>
+    <!-- Cuadro de Prueba Temporal (Fijo Superior Izquierda) -->
+    <div class="demo-box-floating">
+        <strong data-i18n="demo_title">Datos de Prueba:</strong><br>
+        <strong>Admin:</strong> admin@gmail.com / 12345<br>
+        <strong>Company:</strong> company@gmail.com / 12345
     </div>
 
-    <div class="login-wrapper">
-        <!-- Columna Izquierda: Logo Grande y Slogan -->
-        <div class="branding-section">
-            <div class="branding-content text-center">
-                
+    <!-- Controles Flotantes Superior Derecho (Idioma y Tema) -->
+    <div class="top-controls">
+        <button id="btnLangToggle" class="control-btn" type="button">
+            <i class="fa-solid fa-globe"></i> <span id="langText">ES</span>
+        </button>
+        <button id="btnThemeToggle" class="control-btn" type="button">
+            <i class="fa-solid fa-moon" id="themeIcon"></i> <span id="themeText">Oscuro</span>
+        </button>
+    </div>
+
+    <div class="auth-layout">
+        
+        <!-- LADO IZQUIERDO: Branding -->
+        <div class="auth-sidebar">
+            <div class="branding-content">
+                <h2 class="slogan-title" data-i18n="slogan">CONECTA CON EL TALENTO HUMANO MEJOR CALIFICADO</h2>
                 <img src="{{ asset('images/logo.png') }}" alt="Smart Talent Group" class="brand-logo-large">
-                <h2 class="slogan-title mb-4">CONECTA CON EL TALENTO HUMANO MEJOR CALIFICADO</h2>
-        </div>
+            </div>
         </div>
 
-        <!-- Columna Derecha: Formularios -->
-        <div class="form-section">
-            <div class="form-container">
+        <!-- LADO DERECHO: Formularios y Controles -->
+        <div class="auth-content">
+            <div class="auth-form-wrapper">
                 
-                <!-- Selector de Pestañas -->
-                <div class="form-toggle-nav mb-4">
-                    <button type="button" class="toggle-btn active" id="tabLogin">Ingresar</button>
-                    <button type="button" class="toggle-btn" id="tabCompany">Crear Cuenta</button>
+                <!-- Selector Píldora (Se mantiene fijo arriba) -->
+                <div class="auth-toggle-pill">
+                    <div class="pill-slider" id="pillSlider"></div>
+                    <button type="button" id="btnTabLogin" class="pill-btn active" onclick="switchTab('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="tab_login">Ingresar</span>
+                    </button>
+                    <button type="button" id="btnTabReg" class="pill-btn" onclick="switchTab('register')">
+                        <i class="fa-solid fa-user-plus"></i> <span data-i18n="tab_register">Registrarse</span>
+                    </button>
                 </div>
 
-                <!-- 1. INICIO DE SESIÓN -->
-                <div id="loginCard" class="auth-card form-animated show">
-                    <h3 class="fw-bold mb-1 color-dark">Iniciar sesión</h3>
-                    <p class="text-muted small mb-4">Accede con tus credenciales de Smart Talent</p>
+                <!-- ÁREA DE FORMULARIOS (Solo esta sección cambia de altura/contenido) -->
+                <div class="forms-container">
+                    
+                    <!-- 1. FORMULARIO DE INGRESO -->
+                    <div id="loginBlock" class="form-block show">
+                        <h2 data-i18n="login_title">Iniciar sesión</h2>
+                        <p class="subtitle" data-i18n="login_sub">Accede con tus credenciales de Smart Talent</p>
+                        
+                        <div id="loginError" class="alert-error"></div>
 
-                    <form id="loginForm">
-                        <div class="mb-3 text-start">
-                            <label class="form-label small fw-semibold">Correo electrónico</label>
-                            <input type="email" class="form-control form-control-custom" id="loginEmail" placeholder="admin@smartalent.com" required>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label small fw-semibold">Contraseña</label>
-                            <input type="password" class="form-control form-control-custom" id="loginPassword" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn btn-teal w-100 py-2 mt-2 fw-semibold">Ingresar al sistema</button>
-                    </form>
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="email_label">Correo electrónico</label>
+                                <input type="email" id="loginEmail" class="form-input" placeholder="correo@empresa.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="pwd_label">Contraseña</label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                                    <button type="button" class="pwd-toggle" onclick="togglePasswordVisibility('loginPassword')">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
 
-                    <div class="demo-box mt-4 p-3 rounded">
-                        <div class="small fw-semibold text-muted mb-1">Datos de Prueba:</div>
-                        <div class="small text-muted"><strong>Admin:</strong> admin@smartalent.com / 123456</div>
-                        <div class="small text-muted"><strong>Cliente:</strong> cliente@cliente.com / 123456</div>
+                            <button type="submit" class="btn btn-primary" data-i18n="login_btn">Ingresar al sistema</button>
+                        </form>
                     </div>
-                </div>
 
-                <!-- 2. REGISTRO DE EMPRESA -->
-                <div id="companyCard" class="auth-card form-animated d-none">
-                    <h3 class="fw-bold mb-1 color-dark">Registro de Empresa</h3>
-                    <p class="text-muted small mb-3">Registra tu organización para solicitar evaluaciones</p>
+                    <!-- 2. FORMULARIO DE REGISTRO -->
+                    <div id="registerBlock" class="form-block d-none">
+                        <h2 data-i18n="reg_title">Crear Cuenta</h2>
+                        <p class="subtitle" data-i18n="reg_sub">Regístrate para solicitar evaluaciones corporativas</p>
+                        
+                        <div id="registerError" class="alert-error"></div>
+                        <div id="registerSuccess" class="alert-success" data-i18n="reg_success">¡Registro Exitoso! Redirigiendo...</div>
 
-                    <form id="companyForm">
-                        <div class="mb-2 text-start">
-                            <label class="form-label small fw-semibold">RUC de la Empresa</label>
-                            <input type="text" class="form-control form-control-custom" maxlength="11" placeholder="20123456789" required>
-                        </div>
-                        <div class="mb-2 text-start">
-                            <label class="form-label small fw-semibold">Razón Social</label>
-                            <input type="text" class="form-control form-control-custom" placeholder="Nombre de la empresa" required>
-                        </div>
-                        <div class="row g-2 text-start">
-                            <div class="col-6 mb-2">
-                                <label class="form-label small fw-semibold">Teléfono</label>
-                                <input type="tel" class="form-control form-control-custom" placeholder="987654321" required>
+                        <form id="registerForm">
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">RUC (Opcional)</label>
+                                    <input type="text" id="regRuc" class="form-input" placeholder="20123456789">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">DNI</label>
+                                    <input type="text" id="regDni" class="form-input" placeholder="70000000" maxlength="8" required>
+                                </div>
                             </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label small fw-semibold">Correo Corporativo</label>
-                                <input type="email" class="form-control form-control-custom" placeholder="contacto@empresa.com" required>
+
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="name_label">Nombre completo</label>
+                                <input type="text" id="regName" class="form-input" placeholder="Ej. Juan Pérez" required>
                             </div>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label small fw-semibold">Contraseña</label>
-                            <input type="password" class="form-control form-control-custom" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn btn-teal w-100 py-2 fw-semibold">Registrar Empresa</button>
-                    </form>
+
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="email_label">Correo electrónico</label>
+                                <input type="email" id="regEmail" class="form-input" placeholder="correo@empresa.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="phone_label">Teléfono</label>
+                                <input type="tel" id="regPhone" class="form-input" placeholder="999 999 999" required>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label" data-i18n="pwd_label">Contraseña</label>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="regPassword" class="form-input" placeholder="••••••••" required>
+                                        <button type="button" class="pwd-toggle" onclick="togglePasswordVisibility('regPassword')">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" data-i18n="confirm_pwd">Confirmar</label>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="regPasswordConfirm" class="form-input" placeholder="••••••••" required>
+                                        <button type="button" class="pwd-toggle" onclick="togglePasswordVisibility('regPasswordConfirm')">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" data-i18n="reg_btn">Registrarse</button>
+                        </form>
+                    </div>
+
                 </div>
 
             </div>
         </div>
+
     </div>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    @vite(['resources/js/login.js']) -->
 </body>
 </html>
