@@ -12,6 +12,64 @@ let detailModal = null;
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Control del colapso estilo YouTube
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+
+    if (btnToggleSidebar) {
+        btnToggleSidebar.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-is-collapsed');
+            
+            // Persistir preferencia
+            const isCollapsed = document.body.classList.contains('sidebar-is-collapsed');
+            localStorage.setItem('sidebar_collapsed', isCollapsed ? "true" : "false");
+        });
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. Sincronizar el estado del Sidebar al cargar el DOM ---
+    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+    }
+
+    // --- 2. Evento Toggle Sidebar (Guardar preferencia) ---
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+
+    if (btnToggleSidebar) {
+        btnToggleSidebar.addEventListener('click', () => {
+            // Alternar clase en el HTML root
+            document.documentElement.classList.toggle('sidebar-is-collapsed');
+            
+            // Determinar estado actual
+            const currentlyCollapsed = document.documentElement.classList.contains('sidebar-is-collapsed');
+            
+            // Guardar en localStorage para siguientes vistas
+            localStorage.setItem('sidebar_collapsed', currentlyCollapsed ? "true" : "false");
+        });
+    }
+
+    // --- 3. Cerrar Sesión (Reset de Sidebar + Conservar Tema) ---
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+            try {
+                // Eliminar estado colapsado para que la siguiente sesión empiece abierta por defecto
+                localStorage.removeItem('sidebar_collapsed');
+
+                // Petición de Logout a API / Backend
+                await fetch('/api/index.php?action=logout');
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            } finally {
+                // Redirigir al Login
+                window.location.href = '/';
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
     // Sincronizar el texto e icono del botón al cargar la página
     updateThemeUI();
 
