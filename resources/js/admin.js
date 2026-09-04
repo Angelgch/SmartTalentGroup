@@ -1,26 +1,41 @@
 let allRequests = [];
 let detailModal = null;
 
+// 1. APLICACIÓN INMEDIATA DEL TEMA (Evita el parpadeo blanco al cargar)
+(function applyThemeImmediately() {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    if (savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+        document.documentElement.removeAttribute("data-theme");
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Sincronizar el texto e icono del botón al cargar la página
+    updateThemeUI();
+
+    // Configuración Modal
     const modalElement = document.getElementById('detailModal');
     if (modalElement && typeof bootstrap !== 'undefined') {
         detailModal = new bootstrap.Modal(modalElement);
     }
 
+    // Botón Filtro
     const btnFilter = document.getElementById('btnFilter');
     if (btnFilter) btnFilter.addEventListener('click', applyFilters);
 
+    // Botón Cerrar Sesión -> Cierra sesión en PHP y mantiene el tema en localStorage
     const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) btnLogout.addEventListener('click', logout);
-
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            if (currentTheme === 'dark') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+            try {
+                await fetch('/api/index.php?action=logout');
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            } finally {
+                // Mantiene el localStorage para que al volver al Login conserve el tema
+                window.location.href = '/';
             }
         });
     }
@@ -28,37 +43,56 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRequests();
 });
 
-function switchSection(section) {
-    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
-    
-    const targetSection = document.getElementById(`view-${section}`);
-    if (targetSection) targetSection.classList.add('active');
+// 2. ESCUCHADOR DE MODO OSCURO (Delegación de Eventos)
+document.addEventListener("click", (e) => {
+    const themeBtn = e.target.closest("#btnThemeToggle") || e.target.closest("#darkModeToggle");
+    if (!themeBtn) return;
 
-    document.querySelectorAll('.sidebar-nav a').forEach(el => el.classList.remove('active'));
-    const activeNav = document.getElementById(`nav-${section}`);
-    if (activeNav) activeNav.classList.add('active');
+    e.preventDefault();
 
-    const titles = {
-        'dashboard': 'Panel de Administración',
-        'solicitudes': 'Lista de Solicitudes',
-        'lote': 'Reporte Detallado de Lote',
-        'reportes': 'Reportes y Estadísticas'
-    };
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     
-    const pageTitle = document.getElementById('pageTitle');
-    if (pageTitle) {
-        pageTitle.innerHTML = `<i class="fas fa-shield-halved me-2" style="color:var(--teal)"></i>${titles[section] || titles['dashboard']}`;
+    if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem("theme", "light");
+    } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+        localStorage.setItem("theme", "dark");
+    }
+
+    updateThemeUI();
+});
+
+function updateThemeUI() {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const icon = document.getElementById("themeIcon");
+    const text = document.getElementById("themeText");
+    const btn = document.getElementById("btnThemeToggle") || document.getElementById("darkModeToggle");
+
+    if (btn) {
+        const btnIcon = btn.querySelector("i") || icon;
+        const btnText = btn.querySelector("span") || text;
+
+        if (isDark) {
+            if (btnIcon) btnIcon.className = "fa-solid fa-sun";
+            if (btnText) btnText.innerText = "Claro";
+        } else {
+            if (btnIcon) btnIcon.className = "fa-solid fa-moon";
+            if (btnText) btnText.innerText = "Oscuro";
+        }
     }
 }
 
+// 3. CARGA DE SOLICITUDES
 async function loadRequests() {
     try {
-        const res = await fetch('/api/get_admin_requests');
+        const res = await fetch('/api/index.php?action=get_admin_requests');
         if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+            window.location.href = '/';
             return;
         }
-        allRequests = await res.json();
+        const data = await res.json();
+        allRequests = Array.isArray(data) ? data : [];
         updateMetrics(allRequests);
         renderTable(allRequests);
     } catch (error) {
@@ -119,8 +153,4 @@ function applyFilters() {
     });
 
     renderTable(filtered);
-}
-
-async function logout() {
-    window.location.href = '/login';
 }

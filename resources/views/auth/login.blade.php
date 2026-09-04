@@ -19,7 +19,7 @@
     <div class="demo-box-floating">
         <strong data-i18n="demo_title">Datos de Prueba:</strong><br>
         <strong>Admin:</strong> admin@gmail.com / 12345<br>
-        <strong>Company:</strong> company@gmail.com / 12345
+        <strong>Company:</strong> client@gmail.com / 12345
     </div>
 
     <!-- Controles Flotantes Superior Derecho (Idioma y Tema) -->
