@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* 1. MANEJO DEL LOGIN Y REDIRECCIÓN POR ROL */
+
 function initLoginForm() {
     const loginForm = document.getElementById("loginForm");
     const loginError = document.getElementById("loginError");
@@ -17,17 +18,16 @@ function initLoginForm() {
         const email = document.getElementById("loginEmail").value.trim().toLowerCase();
         const password = document.getElementById("loginPassword").value.trim();
 
-        // Limpiar errores previos
         if (loginError) {
             loginError.style.display = "none";
             loginError.innerText = "";
         }
 
-        // Validación de credenciales de prueba
+        // REDIRECCIONES EXACTAS SEGÚN TU web.php
         if (email === "admin@gmail.com" && password === "12345") {
-            window.location.href = "/admin"; // Redirige a la vista Admin
-        } else if (email === "company@gmail.com" && password === "12345") {
-            window.location.href = "/company"; // Redirige a la vista Company
+            window.location.href = "/admin/dashboard";
+        } else if (email === "client@gmail.com" && password === "12345") {
+            window.location.href = "/client/dashboard";
         } else {
             if (loginError) {
                 loginError.innerText = "Credenciales incorrectas. Verifique correo y contraseña.";
@@ -36,7 +36,6 @@ function initLoginForm() {
         }
     });
 }
-
 /* 2. ANIMACIÓN DEL SELECTOR (TAB SLIDER) */
 window.switchTab = function(type) {
     const slider = document.getElementById('pillSlider');

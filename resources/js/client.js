@@ -198,7 +198,7 @@ async function logout() {
 }
 
 // Inicialización de Tema Claro / Oscuro
-function initDarkMode() {
+/*function initDarkMode() {
     const btn = document.getElementById("darkModeToggle");
     const theme = localStorage.getItem("theme");
     if(theme === "dark") {
@@ -220,4 +220,4 @@ function initDarkMode() {
             }
         });
     }
-}
+}*/
