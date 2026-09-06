@@ -1,7 +1,8 @@
 let allRequests = [];
 let detailModal = null;
+let currentZoom = 100;
 
-// 1. APLICACIÓN INMEDIATA DEL TEMA (Evita el parpadeo blanco al cargar)
+// 1. APLICACIÓN INMEDIATA DEL TEMA (Evita parpadeo)
 (function applyThemeImmediately() {
     const savedTheme = localStorage.getItem("theme") || "light";
     if (savedTheme === "dark") {
@@ -12,87 +13,43 @@ let detailModal = null;
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Control del colapso estilo YouTube
-    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-
-    if (btnToggleSidebar) {
-        btnToggleSidebar.addEventListener('click', () => {
-            document.body.classList.toggle('sidebar-is-collapsed');
-            
-            // Persistir preferencia
-            const isCollapsed = document.body.classList.contains('sidebar-is-collapsed');
-            localStorage.setItem('sidebar_collapsed', isCollapsed ? "true" : "false");
-        });
-    }
-});
-document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. Sincronizar el estado del Sidebar al cargar el DOM ---
+    // --- 1. Sincronizar estado del Sidebar ---
     const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
     if (isCollapsed) {
         document.documentElement.classList.add('sidebar-is-collapsed');
     }
 
-    // --- 2. Evento Toggle Sidebar (Guardar preferencia) ---
+    // --- 2. Evento Toggle Sidebar ---
     const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-
     if (btnToggleSidebar) {
         btnToggleSidebar.addEventListener('click', () => {
-            // Alternar clase en el HTML root
             document.documentElement.classList.toggle('sidebar-is-collapsed');
-            
-            // Determinar estado actual
             const currentlyCollapsed = document.documentElement.classList.contains('sidebar-is-collapsed');
-            
-            // Guardar en localStorage para siguientes vistas
             localStorage.setItem('sidebar_collapsed', currentlyCollapsed ? "true" : "false");
         });
     }
 
-    // --- 3. Cerrar Sesión (Reset de Sidebar + Conservar Tema) ---
-    const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', async () => {
-            try {
-                // Eliminar estado colapsado para que la siguiente sesión empiece abierta por defecto
-                localStorage.removeItem('sidebar_collapsed');
-
-                // Petición de Logout a API / Backend
-                await fetch('/api/index.php?action=logout');
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-            } finally {
-                // Redirigir al Login
-                window.location.href = '/';
-            }
-        });
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Sincronizar el texto e icono del botón al cargar la página
+    // --- 3. Actualizar UI de Tema ---
     updateThemeUI();
 
-    // Configuración Modal
     const modalElement = document.getElementById('detailModal');
     if (modalElement && typeof bootstrap !== 'undefined') {
         detailModal = new bootstrap.Modal(modalElement);
     }
 
-    // Botón Filtro
     const btnFilter = document.getElementById('btnFilter');
     if (btnFilter) btnFilter.addEventListener('click', applyFilters);
 
-    // Botón Cerrar Sesión -> Cierra sesión en PHP y mantiene el tema en localStorage
     const btnLogout = document.getElementById('btnLogout');
     if (btnLogout) {
         btnLogout.addEventListener('click', async () => {
             try {
+                localStorage.removeItem('sidebar_collapsed');
                 await fetch('/api/index.php?action=logout');
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
             } finally {
-                // Mantiene el localStorage para que al volver al Login conserve el tema
                 window.location.href = '/';
             }
         });
@@ -101,13 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRequests();
 });
 
-// 2. ESCUCHADOR DE MODO OSCURO (Delegación de Eventos)
+// 2. MODO OSCURO (Delegación de Eventos)
 document.addEventListener("click", (e) => {
     const themeBtn = e.target.closest("#btnThemeToggle") || e.target.closest("#darkModeToggle");
     if (!themeBtn) return;
 
     e.preventDefault();
-
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     
     if (isDark) {
@@ -141,7 +97,46 @@ function updateThemeUI() {
     }
 }
 
-// 3. CARGA DE SOLICITUDES
+// 3. FUNCIONES GLOBALES DE ACCESIBILIDAD
+window.adjustFontSize = function(delta) {
+    currentZoom += delta * 10;
+    if (currentZoom >= 80 && currentZoom <= 130) {
+        document.body.style.zoom = currentZoom + "%";
+    }
+};
+
+window.toggleDyslexicFont = function() {
+    document.body.classList.toggle('font-dyslexic');
+};
+
+window.toggleTextSpacing = function() {
+    document.body.classList.toggle('wide-spacing');
+};
+
+window.toggleHighContrast = function() {
+    document.documentElement.classList.toggle('high-contrast');
+};
+
+window.setDaltonism = function(type) {
+    document.documentElement.classList.remove('filter-grayscale', 'filter-deuteranopia', 'filter-protanopia');
+    if (type !== 'none') {
+        document.documentElement.classList.add('filter-' + type);
+    }
+};
+
+window.resetAccessibility = function() {
+    currentZoom = 100;
+    document.body.style.zoom = "100%";
+    document.body.classList.remove('font-dyslexic', 'wide-spacing');
+    document.documentElement.classList.remove(
+        'high-contrast', 
+        'filter-grayscale', 
+        'filter-deuteranopia', 
+        'filter-protanopia'
+    );
+};
+
+// 4. CARGA Y GESTIÓN DE SOLICITUDES
 async function loadRequests() {
     try {
         const res = await fetch('/api/index.php?action=get_admin_requests');

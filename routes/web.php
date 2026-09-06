@@ -27,7 +27,7 @@ Route::get('/client', function () {
 
 // Panel Administrador (Grupo de Rutas)
 Route::prefix('admin')->name('admin.')->group(function () {
-    // CORREGIDO: Solo se pone '/dashboard' porque el prefijo 'admin' ya se añade solo
+    
     Route::get('/dashboard', function () {
         return view('admin.dashboardAdmin');
     })->name('dashboard');
@@ -36,17 +36,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return view('admin.requestsAdmin');
     })->name('requests');
 
-    Route::get('/monthly-expedient', function () {
-        return view('admin.monthlyExpedientAdmin');
-    })->name('monthly-expedient');
+    // Cambiado: Gestión de Lotes
+    Route::get('/batches', function () {
+        return view('admin.batchAdmin'); // o 'admin.batchesAdmin' según nombraste tu archivo
+    })->name('batches');
 
     Route::get('/reports', function () {
         return view('admin.reportsAdmin');
     })->name('reports');
 
-    Route::get('/clients', function () {
-        return view('admin.clientsAdmin');
-    })->name('clients');
+    // Cambiado: Usuarios (reemplaza a Clientes)
+    Route::get('/users', function () {
+        return view('admin.usersAdmin');
+    })->name('users');
 
     Route::get('/configuration', function () {
         return view('admin.configurationAdmin');
@@ -55,4 +57,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/profile', function () {
         return view('admin.profileAdmin');
     })->name('profile');
+    
+    Route::get('/support', function () {
+    return view('admin.supportAdmin');
+    })->name('support');
 });

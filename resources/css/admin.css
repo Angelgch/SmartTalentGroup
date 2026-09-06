@@ -1,11 +1,11 @@
 /* ==========================================================================
-   1. IMPORTACIÓN DE FUENTES
-   ========================================================================== */
+1. IMPORTACIÓN DE FUENTES
+========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   2. VARIABLES Y CONFIGURACIÓN GLOBAL (TEMA CLARO)
-   ========================================================================== */
+2. VARIABLES Y CONFIGURACIÓN GLOBAL (TEMA CLARO)
+========================================================================== */
 :root {
     /* Paleta cromática principal */
     --teal: #30c1ac;
@@ -34,9 +34,10 @@
     --radius-lg: 16px;
     --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
 }
+
 /* ==========================================================================
-   3. CONFIGURACIÓN DE TEMA OSCURO (DARK MODE)
-   ========================================================================== */
+3. CONFIGURACIÓN DE TEMA OSCURO (DARK MODE)
+========================================================================== */
 [data-theme="dark"] {
     --bg: #121212;
     --bg-surface: #1e1e1e;
@@ -61,8 +62,21 @@ body {
 }
 
 /* ==========================================================================
-   4. BARRA SUPERIOR (TOPBAR)
-   ========================================================================== */
+4. ESTILOS DE ACCESIBILIDAD
+========================================================================== */
+/* Aplicados a HTML para no afectar el Topbar fijo */
+html.high-contrast { filter: contrast(175%) !important; background-color: #000 !important; }
+html.filter-grayscale { filter: grayscale(100%) !important; }
+html.filter-deuteranopia { filter: hue-rotate(90deg) !important; }
+html.filter-protanopia { filter: hue-rotate(180deg) !important; }
+
+/* Aplicados al Body */
+body.font-dyslexic { font-family: 'OpenDyslexicRegular', sans-serif !important; }
+body.wide-spacing { letter-spacing: 0.12em !important; word-spacing: 0.16em !important; line-height: 1.8 !important; }
+
+/* ==========================================================================
+5. BARRA SUPERIOR (TOPBAR)
+========================================================================== */
 .topbar { 
     position: fixed;
     top: 0;
@@ -173,8 +187,8 @@ body {
 }
 
 /* ==========================================================================
-   5. CONTENEDOR PRINCIPAL Y ESTRUCTURA DE LA APP
-   ========================================================================== */
+6. CONTENEDOR PRINCIPAL Y ESTRUCTURA DE LA APP
+========================================================================== */
 .app-container {
     margin-top: var(--topbar-h);
     display: flex;
@@ -182,8 +196,8 @@ body {
 }
 
 /* ==========================================================================
-   6. MENÚ LATERAL (SIDEBAR) - ESTADO DESPLEGADO (DEFAULT)
-   ========================================================================== */
+7. MENÚ LATERAL (SIDEBAR) - ESTADO DESPLEGADO (DEFAULT)
+========================================================================== */
 .sidebar { 
     position: fixed; 
     top: var(--topbar-h); 
@@ -202,7 +216,10 @@ body {
 
 .sidebar-nav { 
     flex: 1; 
+    display: flex;
+    flex-direction: column;
     padding: 12px 0;
+    height: 100%;
 }
 
 /* Enlace del menú */
@@ -210,12 +227,12 @@ body {
     display: flex; 
     align-items: center; 
     height: 48px; 
-    padding: 0 !important;             /* CERO padding: La posición la definen las cajas internas */
+    padding: 0 !important;
     color: var(--text-main); 
     text-decoration: none; 
     font-size: 0.9rem; 
     font-weight: 600; 
-    border-left: 3px solid transparent; /* Línea rosada pegada al borde absoluto izquierdo */
+    border-left: 3px solid transparent;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -224,10 +241,15 @@ body {
 .sidebar-nav a.active { 
     color: var(--pink); 
     background: rgba(235, 42, 93, 0.08); 
-    border-left-color: var(--pink);   /* Línea activada */
+    border-left-color: var(--pink);
 }
 
-/* La caja del ícono mide exactamente lo mismo que el sidebar colapsado (restando los 3px del borde) */
+/* Empuja el último ítem (Soporte) hasta el final del menú */
+.sidebar-nav a.nav-item-bottom {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+}
+
 .sidebar-nav a i { 
     width: calc(var(--sidebar-collapsed-w) - 3px); 
     min-width: calc(var(--sidebar-collapsed-w) - 3px); 
@@ -240,14 +262,14 @@ body {
     margin: 0 !important;
 }
 
-/* Texto del enlace */
 .sidebar-text {
     white-space: nowrap;
-    margin-left: 0;                   /* Inicia inmediatamente al terminar la caja del ícono */
+    margin-left: 0;
 }
+
 /* ==========================================================================
-   7. ÁREA DE CONTENIDO PRINCIPAL (MAIN CONTENT)
-   ========================================================================== */
+8. ÁREA DE CONTENIDO PRINCIPAL (MAIN CONTENT)
+========================================================================== */
 .main-content { 
     margin-left: var(--sidebar-w); 
     flex: 1;
@@ -259,8 +281,8 @@ body {
 }
 
 /* ==========================================================================
-   8. ESTADO COLAPSADO (SIDEBAR-IS-COLLAPSED)
-   ========================================================================== */
+9. ESTADO COLAPSADO (SIDEBAR-IS-COLLAPSED)
+========================================================================== */
 html.sidebar-is-collapsed .sidebar,
 body.sidebar-is-collapsed .sidebar {
     width: var(--sidebar-collapsed-w) !important;
@@ -271,15 +293,14 @@ body.sidebar-is-collapsed .main-content {
     margin-left: var(--sidebar-collapsed-w) !important;
 }
 
-/* Ocultar el texto */
 html.sidebar-is-collapsed .sidebar-text,
 body.sidebar-is-collapsed .sidebar-text {
     display: none !important;
 }
 
 /* ==========================================================================
-   9. COMPONENTES VISUALES: TARJETAS ESTADÍSTICAS (STAT CARDS)
-   ========================================================================== */
+10. COMPONENTES VISUALES: TARJETAS ESTADÍSTICAS (STAT CARDS)
+========================================================================== */
 .stat-card { 
     background: var(--bg-surface); 
     border: 1px solid var(--border); 
@@ -322,8 +343,8 @@ body.sidebar-is-collapsed .sidebar-text {
 }
 
 /* ==========================================================================
-   10. COMPONENTES VISUALES: TABLAS Y FILTROS
-   ========================================================================== */
+11. COMPONENTES VISUALES: TABLAS Y FILTROS
+========================================================================== */
 .filter-section { 
     background: var(--bg-surface); 
     border: 1px solid var(--border); 
@@ -380,8 +401,8 @@ body.sidebar-is-collapsed .sidebar-text {
 }
 
 /* ==========================================================================
-   11. SOBREESCRITURAS PARA FORMULARIOS EN MODO OSCURO
-   ========================================================================== */
+12. SOBREESCRITURAS PARA FORMULARIOS EN MODO OSCURO
+========================================================================== */
 [data-theme="dark"] .form-control,
 [data-theme="dark"] .form-select {
     background-color: var(--bg-surface) !important;
